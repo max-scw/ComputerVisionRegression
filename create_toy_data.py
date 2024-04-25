@@ -49,13 +49,15 @@ if __name__ == "__main__":
             x_end = x_start + th
 
             # get all points
-            pts = list(range(x_start - 1, x_end + 1))
+            pts = list(range(x_start - 1, x_end + 2))
 
             # ensure that the new line does not overlap with other lines
             if not any([el in points for el in pts]):
                 image[x_start:x_end, :] = np.random.randint(255 - foreground_noise_scale, 255, size=(th, image_sz[1]))
                 # count lines
                 n_lines_ += 1
+                # updating points
+                points += pts
 
         # save image to file
         filename = path_export / f"toy_data_{i:05}_{n_lines_}.jpg"
