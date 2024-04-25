@@ -1,6 +1,7 @@
 from pathlib import Path
 from PIL import Image
 import numpy as np
+import random
 
 from tqdm import tqdm
 
@@ -60,12 +61,24 @@ if __name__ == "__main__":
                 points += pts
 
         # save image to file
-        filename = path_export / f"toy_data_{i:05}_{n_lines_}.jpg"
+        filename = path_export / f"toy_data_{i:05}.jpg"
         Image.fromarray(image).save(filename)
 
         info.append((filename, n_lines_))
     # write info file
     info_txt = [f"{fl.as_posix()} {n}" for fl, n in info]
-    with open("info.txt", "w") as fid:
-        fid.writelines("\n".join(info_txt))
+    # shuffle images to assign into different sets
+    random.shuffle(info_txt)
+    # split data into training, validation, and test set
+    dataset_split = {"Trn": 0.5, "Val": 0.2, "Tst": 0.3}
+    i = 0
+    for ky, vl in dataset_split.items():
+        # slice section
+        n = round(vl * len(info_txt))
+        data_split = info_txt[i:max((i + n, len(info_txt)))]
+        # write file
+        with open(f"{ky}.txt", "w") as fid:
+            fid.writelines("\n".join(data_split))
+        # update counter
+        i += n
 

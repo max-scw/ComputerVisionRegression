@@ -44,13 +44,11 @@ class LoadImagesAndLabels(Dataset):
         return img.float(), torch.tensor([val]).float()
 
 
-def build_dataloaders(info_file: Path, transforms=None, batch_size: int = 32):
-    dataset_names = {"training": "Trn", "validation": "Val"}
-
+def build_dataloaders(info_file: Dict[str, Union[str, Path]], transforms=None, batch_size: int = 32):
     data_loaders = dict()
-    for ky, vl in dataset_names.items():
+    for ky, vl in info_file.items():
         image_dataset = LoadImagesAndLabels(
-            info_file,
+            vl,
             transforms=transforms,
             shuffle_data=True if ky == "training" else False
         )

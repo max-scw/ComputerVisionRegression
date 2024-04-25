@@ -100,16 +100,19 @@ def train(
 
     # load best model weights
     model.load_state_dict(best_model_weights)
-    return model
+    return model, history
 
 
 if __name__ == "__main__":
-    info_file = Path(r"./info.txt")
+    info_files = {
+        "training": Path(r"./Trn.txt"),
+        "validation": Path(r"./Val.txt"),
+    }
 
     # get model
     mdl, transforms = build_model()
     batch_size = 4
 
-    data_loaders = build_dataloaders(info_file, transforms, batch_size=batch_size)
+    data_loaders = build_dataloaders(info_files, transforms, batch_size=batch_size)
 
-    train(mdl, data_loaders, num_epochs=100, batch_size=batch_size)
+    mdl, hist = train(mdl, data_loaders, num_epochs=100, batch_size=batch_size)
