@@ -18,7 +18,6 @@ def train(
         model,
         dataloaders: dict,
         num_epochs: int,
-        batch_size: int = 4,
         criterion=None,
         optimizer=None,
         scheduler=None,
@@ -115,4 +114,4 @@ if __name__ == "__main__":
 
     data_loaders = build_dataloaders(info_files, transforms, batch_size=batch_size)
 
-    mdl, hist = train(mdl, data_loaders, num_epochs=100, batch_size=batch_size)
+    mdl, hist = train(mdl, data_loaders, num_epochs=100)
