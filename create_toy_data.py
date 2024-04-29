@@ -9,7 +9,7 @@ if __name__ == "__main__":
     # path to export images to
     path_export = Path("datasets/toydata")
     # number of images that should be generated
-    n_images = 42
+    n_images = 420
     # maximum number of lines per image
     n_lines_max = 10
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     for ky, vl in dataset_split.items():
         # slice section
         n = round(vl * len(info_txt))
-        data_split = info_txt[i:max((i + n, len(info_txt)))]
+        data_split = info_txt[i:min((i + n, len(info_txt)))]
         # write file
         with open(f"{ky}.txt", "w") as fid:
             fid.writelines("\n".join(data_split))
