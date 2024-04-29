@@ -5,19 +5,24 @@ import sys
 from tqdm import tqdm
 import numpy as np
 import copy
+from itertools import chain
 
 import torch
 import torch.nn as nn
+from torch.utils.data import DataLoader
 
 
-from utils.dataset import LoadImagesAndLabels, build_dataloaders
+from utils.dataset import LoadImagesAndLabels, build_dataloader
 from model import build_model
+
+from typing import List
 
 
 def train(
         model,
-        dataloaders: dict,
+        dataloader_training: DataLoader,
         num_epochs: int,
+        dataloader_validation: DataLoader,
         criterion=None,
         optimizer=None,
         scheduler=None,
@@ -29,6 +34,11 @@ def train(
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     if scheduler is None:
         scheduler = optimizer
+
+    dataloaders = {
+        "training": dataloader_training,
+        "validation": dataloader_validation if isinstance(dataloader_validation, DataLoader) else dataloader_training,
+    }
 
     t0 = default_timer()
 
@@ -102,16 +112,43 @@ def train(
     return model, history
 
 
+def predict(
+        model,
+        dataloader: DataLoader,
+        device: str = "cpu"
+) -> List[float]:
+    model.eval()
+
+    # Iterate over data.
+    output = []
+    for inputs, _ in dataloader:
+        inputs = inputs.to(device)
+
+        with torch.no_grad():
+            outputs = model(inputs)
+        output.append(outputs)
+    return list(chain.from_iterable(output))
+
+
 if __name__ == "__main__":
-    info_files = {
-        "training": Path(r"./Trn.txt"),
-        "validation": Path(r"./Val.txt"),
-    }
 
     # get model
     mdl, transforms = build_model()
-    batch_size = 4
+    batch_size = 21
 
-    data_loaders = build_dataloaders(info_files, transforms, batch_size=batch_size)
+    data_loader_train = build_dataloader(Path(r"./Trn.txt"), transforms, batch_size=batch_size, shuffle_data=True)
+    data_loader_valid = build_dataloader(Path(r"./Val.txt"), transforms, batch_size=batch_size)
+    mdl, hist = train(
+        mdl,
+        data_loader_train,
+        dataloader_validation=data_loader_valid,
+        num_epochs=60
+    )
 
-    mdl, hist = train(mdl, data_loaders, num_epochs=100)
+    # df = pd.DataFrame(hist)
+    # df.plot()
+    # plt.show()
+
+
+    data_loader_test = build_dataloader(Path(r"./Tst.txt"), transforms)
+    results = predict(mdl, data_loader_test)
